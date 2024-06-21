@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Locator;
 
 namespace MsBuildPipeLogger.Tests.Client
 {
@@ -8,7 +10,17 @@ namespace MsBuildPipeLogger.Tests.Client
     {
         public static int Main(string[] args)
         {
+            VisualStudioInstance instance = MSBuildLocator.QueryVisualStudioInstances()
+                .OrderByDescending(instance => instance.Version)
+                .First();
+            MSBuildLocator.RegisterInstance(instance);
+            return Run(args);
+        }
+
+        private static int Run(string[] args)
+        {
             Console.WriteLine(string.Join("; ", args));
+
             int messages = int.Parse(args[1]);
             try
             {

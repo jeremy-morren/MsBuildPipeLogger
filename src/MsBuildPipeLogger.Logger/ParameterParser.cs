@@ -56,11 +56,11 @@ namespace MsBuildPipeLogger
         internal static KeyValuePair<ParameterType, string>[] ParseParameters(string parameters)
         {
             string[] segments = parameters.Split(';');
-            if (segments.Length < 1 || segments.Length > 2)
+            if (segments.Length is < 1 or > 2)
             {
                 throw new LoggerException("Unexpected number of parameters");
             }
-            return segments.Select(x => ParseParameter(x)).ToArray();
+            return segments.Select(ParseParameter).ToArray();
         }
 
         private static KeyValuePair<ParameterType, string> ParseParameter(string parameter)

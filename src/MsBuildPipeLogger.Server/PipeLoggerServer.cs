@@ -17,7 +17,7 @@ namespace MsBuildPipeLogger
         where TPipeStream : PipeStream
     {
         private readonly BinaryReader _binaryReader;
-        private readonly BuildEventArgsReaderProxy _buildEventArgsReader;
+        private readonly BuildEventArgsReader _buildEventArgsReader;
 
         internal PipeBuffer Buffer { get; } = new PipeBuffer();
 
@@ -43,7 +43,7 @@ namespace MsBuildPipeLogger
         {
             PipeStream = pipeStream;
             _binaryReader = new BinaryReader(Buffer);
-            _buildEventArgsReader = new BuildEventArgsReaderProxy(_binaryReader);
+            _buildEventArgsReader = new BuildEventArgsReader(_binaryReader, 7);
             CancellationToken = cancellationToken;
 
             Thread readerThread = new Thread(() =>

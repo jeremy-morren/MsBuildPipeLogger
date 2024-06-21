@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Locator;
 using Microsoft.Build.Logging;
 using NUnit.Framework;
 using Shouldly;
@@ -16,6 +17,18 @@ namespace MsBuildPipeLogger.Tests
     [NonParallelizable]
     public class IntegrationFixture
     {
+        static IntegrationFixture()
+        {
+            if (MSBuildLocator.IsRegistered)
+            {
+                return;
+            }
+            VisualStudioInstance instance = MSBuildLocator.QueryVisualStudioInstances()
+                .OrderByDescending(instance => instance.Version)
+                .First();
+            MSBuildLocator.RegisterInstance(instance);
+        }
+
         private static readonly int[] MessageCounts = { 0, 1, 100000 };
 
         [Test]
@@ -27,7 +40,7 @@ namespace MsBuildPipeLogger.Tests
             BinaryWriter binaryWriter = new BinaryWriter(memory);
             BuildEventArgsWriter writer = new BuildEventArgsWriter(binaryWriter);
             BinaryReader binaryReader = new BinaryReader(memory);
-            BuildEventArgsReaderProxy reader = new BuildEventArgsReaderProxy(binaryReader);
+            BuildEventArgsReader reader = new BuildEventArgsReader(binaryReader, 7);
             List<BuildEventArgs> eventArgs = new List<BuildEventArgs>();
 
             // When
@@ -147,18 +160,26 @@ namespace MsBuildPipeLogger.Tests
             {
                 process.StartInfo.FileName = "dotnet";
                 process.StartInfo.Arguments = $"MsBuildPipeLogger.Tests.Client.dll {arguments} {messages}";
-                process.StartInfo.WorkingDirectory = Path.GetDirectoryName(typeof(IntegrationFixture).Assembly.Location).Replace("MsBuildPipeLogger.Tests", "MsBuildPipeLogger.Tests.Client");
+                string directory = Path.GetDirectoryName(typeof(IntegrationFixture).Assembly.Location);
+                directory = directory!.Replace("MsBuildPipeLogger.Tests", "MsBuildPipeLogger.Tests.Client");
+                process.StartInfo.WorkingDirectory = directory;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.UseShellExecute = false;
 
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
+                process.EnableRaisingEvents = true;
                 process.OutputDataReceived += (s, e) => TestContext.WriteLine(e.Data);
-                process.ErrorDataReceived += (s, e) => TestContext.WriteLine(e.Data);
+                process.ErrorDataReceived += (s, e) =>
+                {
+                    TestContext.WriteLine(e.Data);
+                    process.Kill();
+                };
 
                 process.Start();
                 TestContext.WriteLine($"Started process {process.Id}");
                 process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
 
                 server.ReadAll();
             }

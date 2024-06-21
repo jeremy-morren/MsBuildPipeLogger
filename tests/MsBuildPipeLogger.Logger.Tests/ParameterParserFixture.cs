@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Locator;
 using MsBuildPipeLogger;
 using NUnit.Framework;
 using Shouldly;
@@ -11,6 +13,18 @@ namespace MsBuildPipeLogger.Logger.Tests
     [TestFixture]
     public class ParameterParserFixture
     {
+        static ParameterParserFixture()
+        {
+            if (MSBuildLocator.IsRegistered)
+            {
+                return;
+            }
+            VisualStudioInstance instance = MSBuildLocator.QueryVisualStudioInstances()
+                .OrderByDescending(instance => instance.Version)
+                .First();
+            MSBuildLocator.RegisterInstance(instance);
+        }
+
         [TestCase("1234")]
         [TestCase(" 1234 ")]
         [TestCase("handle=1234")]
