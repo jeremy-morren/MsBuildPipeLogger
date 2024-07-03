@@ -51,7 +51,7 @@ server.AnyEventRaised += (s, e) => Console.WriteLine(e.Message);
 // Note you can also call MSBuild straight from the CLI, you just need to know the pipe handle to pass it to the logger
 Process process = new Process();
 process.StartInfo.FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin";
-process.StartInfo.Arguments = $"/noconlog /logger:MsBuildPipeLogger,\"C:\Path\To\MsBuildPipeLogger.Logger.dll\";{pipeHandle}";
+process.StartInfo.Arguments = $"/noconlog /logger:MsBuildPipeLogger.PipeLogger,\"C:\Path\To\MsBuildPipeLogger.Logger.dll\";{pipeHandle}";
 // ...other process settings like working directory
 process.Start();
 
@@ -77,7 +77,7 @@ server.AnyEventRaised += (s, e) => Console.WriteLine(e.Message);
 // Note you can also call MSBuild straight from the CLI, you just need to know the pipe handle to pass it to the logger
 Process process = new Process();
 process.StartInfo.FileName = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin";
-process.StartInfo.Arguments = $"/noconlog /logger:MsBuildPipeLogger.Logger,\"C:\Path\To\MsBuildPipeLogger.Logger.dll\";name=Mario;server=MyServerName";
+process.StartInfo.Arguments = $"/noconlog /logger:MsBuildPipeLogger.PipeLogger,\"C:\Path\To\MsBuildPipeLogger.Logger.dll\";name=Mario;server=MyServerName";
 // ...other process settings like working directory
 process.Start();
 
