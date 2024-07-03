@@ -117,6 +117,15 @@ namespace MsBuildPipeLogger
             }
         }
 
+        public void BeginReadAll()
+        {
+            Thread thread = new Thread(ReadAll)
+            {
+                IsBackground = true
+            };
+            thread.Start();
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {
